@@ -20,6 +20,18 @@ def add_keyboard():
     return keyboard.get_keyboard()
 
 
+def update_user_group(user_id, group):
+    client = MongoClient()
+    db = client.botdb
+    db.users.update_one({
+        '_id': user_id
+    }, {
+        '$set': {
+            'group': group.lower()
+        }
+    }, upsert=False)
+
+
 def get_group(user_id):
     client = MongoClient()
     db = client.botdb
@@ -33,8 +45,8 @@ def start_func(user_id):
     group = db.users.insert_one({'_id': user_id, 'group': None})
 
 
-def where_is():
-    return 'в пизде'
+def where_is(group):
+    return
 
 
 def what_is_today():
@@ -59,40 +71,55 @@ def main():
 
     vk = vk_session.get_api()
 
+    LIST_OF_GROUPS = [group['_id'] for group in db.groups.find()]
+
     for event in longpoll.listen():
 
         if event.type == VkBotEventType.MESSAGE_NEW:
-            if event.obj.text.lower().strip() == 'начать' and not db.users.find_one({'_id': event.obj.from_id}):
+            group = get_group(event.obj.from_id)
+            if not group:
                 vk.messages.send(user_id=event.obj.from_id,
                                  keyboard=add_keyboard(),
-                                 message='Прувет',
+                                 message='Привет, Введите номер группы',
                                  random_id=get_random_id())
                 start_func(event.obj.from_id)
+                continue
 
-            elif event.obj.text.lower().strip() == 'где пара?':
+            if event.obj.text.lower() in LIST_OF_GROUPS:
                 vk.messages.send(user_id=event.obj.from_id,
-                                 message=where_is(),
+                                 message='Номер принят',
                                  random_id=get_random_id())
-                get_group(event.obj.from_id)
+                update_user_group(event.obj.from_id, event.obj.text)
 
-            elif event.obj.text.lower().strip() == 'какие сегодня пары?':
-                vk.messages.send(user_id=event.obj.from_id,
-                                 message=what_is_today(),
-                                 random_id=get_random_id())
+            elif group['group'] in LIST_OF_GROUPS:
+                if event.obj.text.lower().strip() == 'где пара?':
+                    vk.messages.send(user_id=event.obj.from_id,
+                                     message=where_is(),
+                                     random_id=get_random_id())
 
-            elif event.obj.text.lower().strip() == 'какие завтра пары?':
-                vk.messages.send(user_id=event.obj.from_id,
-                                 message=what_is_tomorrow(),
-                                 random_id=get_random_id())
+                elif event.obj.text.lower().strip() == 'какие сегодня пары?':
+                    vk.messages.send(user_id=event.obj.from_id,
+                                     message=what_is_today(),
+                                     random_id=get_random_id())
 
-            elif event.obj.text.lower().strip() == 'когда на учёбу?':
-                vk.messages.send(user_id=event.obj.from_id,
-                                 message=when_to_study(),
-                                 random_id=get_random_id())
+                elif event.obj.text.lower().strip() == 'какие завтра пары?':
+                    vk.messages.send(user_id=event.obj.from_id,
+                                     message=what_is_tomorrow(),
+                                     random_id=get_random_id())
+
+                elif event.obj.text.lower().strip() == 'когда на учёбу?':
+                    vk.messages.send(user_id=event.obj.from_id,
+                                     message=when_to_study(),
+                                     random_id=get_random_id())
+
+                else:
+                    vk.messages.send(user_id=event.obj.from_id,
+                                     message='Не понел',
+                                     random_id=get_random_id())
 
             else:
                 vk.messages.send(user_id=event.obj.from_id,
-                                 message='Не понел',
+                                 message='Введите номер группы',
                                  random_id=get_random_id())
 
 
