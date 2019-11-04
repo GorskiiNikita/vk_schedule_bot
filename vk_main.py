@@ -53,6 +53,10 @@ def start_func(user_id):
     group = db.users.insert_one({'_id': user_id, 'group': None})
 
 
+def get_schedule(date):
+    pass
+
+
 def where_is(group):
     now = datetime.datetime.now()
     next_lesson_time = None
