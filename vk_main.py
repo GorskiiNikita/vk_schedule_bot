@@ -1,9 +1,17 @@
 import vk_api
+import datetime
 from pymongo import MongoClient
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.utils import get_random_id
 
+
+DAYS_OF_WEEK = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+TIME_LESSONS = {'first': datetime.time(9, 0, 0),
+                'second': datetime.time(10, 45, 0),
+                'third': datetime.time(12, 30, 0),
+                'fourth': datetime.time(15, 0, 0),
+                'fifth': datetime.time(16, 45, 0)}
 
 TOKEN = 'cbb736a0eaa5cbb7c5a8feec57b57479ef7b518cdee16c9bab004299f0c83cd44f830247c4063dc637f11'
 
@@ -46,7 +54,34 @@ def start_func(user_id):
 
 
 def where_is(group):
-    return
+    now = datetime.datetime.now()
+    next_lesson_time = None
+    next_lesson_key = None
+    day = now.isoweekday()
+    #day = 4
+    time = now.time()
+    #time = datetime.time(10, 40, 0)
+    if day in range(1, 7):
+        client = MongoClient()
+        db = client.botdb
+        schedule = db.groups.find_one({'_id': group})[DAYS_OF_WEEK[day - 1]]
+        for key in TIME_LESSONS.keys():
+            if schedule[key] is not None and TIME_LESSONS[key] > time:
+                next_lesson_time = TIME_LESSONS[key]
+                next_lesson_key = key
+                break
+
+        if next_lesson_time is None:
+            return 'Пары сегодня уже закончились'
+        else:
+            minutes = next_lesson_time.hour * 60 + next_lesson_time.minute - time.minute - time.hour * 60
+            minutes_left = minutes % 60
+            hours_left = minutes // 60
+            return f'Следующая пара: {schedule[next_lesson_key]["name"]} \n Через: {hours_left} ч. {minutes_left} м. \n' \
+                   f'Пара в {schedule[next_lesson_key]["where"]} аудитории'
+
+    else:
+        return 'Сегодня выходной'
 
 
 def what_is_today():
@@ -94,7 +129,7 @@ def main():
             elif group['group'] in LIST_OF_GROUPS:
                 if event.obj.text.lower().strip() == 'где пара?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=where_is(),
+                                     message=where_is(group['group']),
                                      random_id=get_random_id())
 
                 elif event.obj.text.lower().strip() == 'какие сегодня пары?':
