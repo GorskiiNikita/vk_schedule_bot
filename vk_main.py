@@ -68,9 +68,8 @@ def get_schedule(group, date):
     return schedule
 
 
-def where_is(group):
-    now = datetime.datetime.now()
-    #now = datetime.datetime(2019, 11, 9, 8, 30)
+def where_is(group, date):
+    now = date
     next_lesson_time = None
     next_lesson_key = None
     day = now.isoweekday()
@@ -104,7 +103,6 @@ def what_is_today(group, date):
                     'fourth': '15:00 - 16:30',
                     'fifth': '16:45 - 18:15'}
     now = date
-    #now = datetime.datetime(2019, 11, 10, 8, 30)
     if now.isoweekday() in range(1, 7):
         schedule = get_schedule(group, now)
         for lesson in schedule.keys():
@@ -125,7 +123,20 @@ def what_is_tomorrow(group, date):
 
 
 def when_to_study(group, date):
-    pass
+    resp = where_is(group, date)
+    if resp == 'Пары сегодня уже закончились' or resp == 'Сегодня выходной':
+        date += datetime.timedelta(days=1)
+        resp = what_is_today(group, date)
+        days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
+        while resp == 'Сегодня выходной':
+            date += datetime.timedelta(days=1)
+            resp = what_is_today(group, date)
+        day = date.isoweekday()
+        date = date.strftime('%d.%m.%Y')
+        resp = f'На учёбу {date}, {days[day-1]} \n\n Расписание в этот день:\n' + resp
+        return resp
+    else:
+        return what_is_today(group, date)
 
 
 def main():
@@ -162,7 +173,7 @@ def main():
             elif group['group'] in LIST_OF_GROUPS:
                 if event.obj.text.lower().strip() == 'где пара?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=where_is(group['group']),
+                                     message=where_is(group['group'], datetime.datetime.now()),
                                      random_id=get_random_id())
 
                 elif event.obj.text.lower().strip() == 'какие сегодня пары?':
@@ -177,7 +188,7 @@ def main():
 
                 elif event.obj.text.lower().strip() == 'когда на учёбу?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=when_to_study(),
+                                     message=when_to_study(group['group'], datetime.datetime.now()),
                                      random_id=get_random_id())
 
                 else:
