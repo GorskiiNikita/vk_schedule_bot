@@ -58,24 +58,23 @@ def get_schedule(group, date):
     db = client.botdb
     day = date.isoweekday()
     schedule = db.groups.find_one({'_id': group})[DAYS_OF_WEEK[day - 1]]
-    for day in schedule.keys():
-        if schedule[day] is None:
+    for lesson in schedule.keys():
+        if schedule[lesson] is None:
             continue
-        elif len(schedule[day]) == 1:
-            schedule[day] = schedule[day][0]
-        elif len(schedule[day]) == 2:
-            schedule[day] = schedule[day][date.isocalendar()[1] % 2]
+        elif len(schedule[lesson]) == 1:
+            schedule[lesson] = schedule[lesson][0]
+        elif len(schedule[lesson]) == 2:
+            schedule[lesson] = schedule[lesson][date.isocalendar()[1] % 2]
     return schedule
 
 
 def where_is(group):
     now = datetime.datetime.now()
+    #now = datetime.datetime(2019, 11, 9, 8, 30)
     next_lesson_time = None
     next_lesson_key = None
     day = now.isoweekday()
-    #day = 4
     time = now.time()
-    #time = datetime.time(10, 40, 0)
     if day in range(1, 7):
         schedule = get_schedule(group, now)
         for key in TIME_LESSONS.keys():
@@ -97,16 +96,36 @@ def where_is(group):
         return 'Сегодня выходной'
 
 
-def what_is_today():
-    return 'хуй'
+def what_is_today(group, date):
+    resp = []
+    lessons_time = {'first': '9:00 - 10:30',
+                    'second': '10:45 - 12:15',
+                    'third': '12:30 - 14:00',
+                    'fourth': '15:00 - 16:30',
+                    'fifth': '16:45 - 18:15'}
+    now = date
+    #now = datetime.datetime(2019, 11, 10, 8, 30)
+    if now.isoweekday() in range(1, 7):
+        schedule = get_schedule(group, now)
+        for lesson in schedule.keys():
+            if schedule[lesson] is not None:
+                resp.append(f'{lessons_time[lesson]} \n{schedule[lesson]["name"]} {schedule[lesson]["where"]}')
+        resp = '\n\n'.join(resp)
+        return resp
+    else:
+        return 'Сегодня выходной'
 
 
-def what_is_tomorrow():
-    return 'пизда'
+def what_is_tomorrow(group, date):
+    date += datetime.timedelta(days=1)
+    resp = what_is_today(group, date)
+    if resp == 'Сегодня выходной':
+        resp = 'Завтра выходной'
+    return resp
 
 
-def when_to_study():
-    return 'иди на хуй'
+def when_to_study(group, date):
+    pass
 
 
 def main():
@@ -135,6 +154,7 @@ def main():
 
             if event.obj.text.lower() in LIST_OF_GROUPS:
                 vk.messages.send(user_id=event.obj.from_id,
+                                 keyboard=add_keyboard(),
                                  message='Номер принят',
                                  random_id=get_random_id())
                 update_user_group(event.obj.from_id, event.obj.text)
@@ -147,12 +167,12 @@ def main():
 
                 elif event.obj.text.lower().strip() == 'какие сегодня пары?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=what_is_today(),
+                                     message=what_is_today(group['group'], datetime.datetime.now()),
                                      random_id=get_random_id())
 
                 elif event.obj.text.lower().strip() == 'какие завтра пары?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=what_is_tomorrow(),
+                                     message=what_is_tomorrow(group['group'], datetime.datetime.now()),
                                      random_id=get_random_id())
 
                 elif event.obj.text.lower().strip() == 'когда на учёбу?':
