@@ -53,8 +53,19 @@ def start_func(user_id):
     group = db.users.insert_one({'_id': user_id, 'group': None})
 
 
-def get_schedule(date):
-    pass
+def get_schedule(group, date):
+    client = MongoClient()
+    db = client.botdb
+    day = date.isoweekday()
+    schedule = db.groups.find_one({'_id': group})[DAYS_OF_WEEK[day - 1]]
+    for day in schedule.keys():
+        if schedule[day] is None:
+            continue
+        elif len(schedule[day]) == 1:
+            schedule[day] = schedule[day][0]
+        elif len(schedule[day]) == 2:
+            schedule[day] = schedule[day][date.isocalendar()[1] % 2]
+    return schedule
 
 
 def where_is(group):
@@ -66,9 +77,7 @@ def where_is(group):
     time = now.time()
     #time = datetime.time(10, 40, 0)
     if day in range(1, 7):
-        client = MongoClient()
-        db = client.botdb
-        schedule = db.groups.find_one({'_id': group})[DAYS_OF_WEEK[day - 1]]
+        schedule = get_schedule(group, now)
         for key in TIME_LESSONS.keys():
             if schedule[key] is not None and TIME_LESSONS[key] > time:
                 next_lesson_time = TIME_LESSONS[key]
