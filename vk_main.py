@@ -7,6 +7,7 @@ from vk_api.utils import get_random_id
 
 
 DAYS_OF_WEEK = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+DAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
 TIME_LESSONS = {'first': datetime.time(9, 0, 0),
                 'second': datetime.time(10, 45, 0),
                 'third': datetime.time(12, 30, 0),
@@ -109,9 +110,9 @@ def what_is_today(group, date):
             if schedule[lesson] is not None:
                 resp.append(f'{lessons_time[lesson]} \n{schedule[lesson]["name"]} {schedule[lesson]["where"]}')
         resp = '\n\n'.join(resp)
-        return resp
-    else:
-        return 'Сегодня выходной'
+        if resp:
+            return resp
+    return 'Сегодня выходной'
 
 
 def what_is_tomorrow(group, date):
@@ -127,16 +128,15 @@ def when_to_study(group, date):
     if resp == 'Пары сегодня уже закончились' or resp == 'Сегодня выходной':
         date += datetime.timedelta(days=1)
         resp = what_is_today(group, date)
-        days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
         while resp == 'Сегодня выходной':
             date += datetime.timedelta(days=1)
             resp = what_is_today(group, date)
         day = date.isoweekday()
         date = date.strftime('%d.%m.%Y')
-        resp = f'На учёбу {date}, {days[day-1]} \n\n Расписание в этот день:\n' + resp
+        resp = f'На учёбу {date}, {DAYS[day-1]} \n\n Расписание в этот день:\n' + resp
         return resp
     else:
-        return what_is_today(group, date)
+        return f'На учёбу {date.strftime("%d.%m.%Y")}, Сегодня \n {what_is_today(group, date)}'
 
 
 def main():
@@ -193,7 +193,7 @@ def main():
 
                 else:
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message='Не понел',
+                                     message='Бот вас не понял. Введите команду или номер группы.',
                                      random_id=get_random_id())
 
             else:
