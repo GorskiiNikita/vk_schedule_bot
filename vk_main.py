@@ -154,6 +154,7 @@ def main():
     for event in longpoll.listen():
 
         if event.type == VkBotEventType.MESSAGE_NEW:
+            now = datetime.datetime.now() + datetime.timedelta(hours=3)
             group = get_group(event.obj.from_id)
             if not group:
                 vk.messages.send(user_id=event.obj.from_id,
@@ -173,22 +174,22 @@ def main():
             elif group['group'] in LIST_OF_GROUPS:
                 if event.obj.text.lower().strip() == 'где пара?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=where_is(group['group'], datetime.datetime.now()),
+                                     message=where_is(group['group'], now),
                                      random_id=get_random_id())
 
                 elif event.obj.text.lower().strip() == 'какие сегодня пары?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=what_is_today(group['group'], datetime.datetime.now()),
+                                     message=what_is_today(group['group'], now),
                                      random_id=get_random_id())
 
                 elif event.obj.text.lower().strip() == 'какие завтра пары?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=what_is_tomorrow(group['group'], datetime.datetime.now()),
+                                     message=what_is_tomorrow(group['group'], now),
                                      random_id=get_random_id())
 
                 elif event.obj.text.lower().strip() == 'когда на учёбу?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=when_to_study(group['group'], datetime.datetime.now()),
+                                     message=when_to_study(group['group'], now),
                                      random_id=get_random_id())
 
                 else:
