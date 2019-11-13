@@ -17,6 +17,16 @@ TIME_LESSONS = {'first': datetime.time(9, 0, 0),
 TOKEN = 'cbb736a0eaa5cbb7c5a8feec57b57479ef7b518cdee16c9bab004299f0c83cd44f830247c4063dc637f11'
 
 
+class MyVkBotLongPoll(VkBotLongPoll):
+    def listen(self):
+        while True:
+            try:
+                for event in self.check():
+                    yield event
+            except Exception as e:
+                print('error', e)
+
+
 def add_keyboard():
     keyboard = VkKeyboard()
     keyboard.add_button('Где пара?', color=VkKeyboardColor.PRIMARY)
@@ -145,7 +155,7 @@ def main():
     client = MongoClient()
     db = client.botdb
 
-    longpoll = VkBotLongPoll(vk_session, '187821773')
+    longpoll = MyVkBotLongPoll(vk_session, '187821773')
 
     vk = vk_session.get_api()
 
