@@ -35,13 +35,20 @@ class Holidays:
             hols.append(i)
         return hols
 
-    def check_day(self):
-        pass
+    def check_holidays(self):
+        now = datetime.datetime.now() + datetime.timedelta(hours=3)
+        for holiday in self.holiday_dates:
+            if datetime.datetime.strptime(holiday['start_holidays'], '%d-%m-%Y') < now < datetime.datetime.strptime(holiday['end_holidays'], '%d-%m-%Y'):
+                return True
+        return False
 
     def start_loop(self):
         while True:
             time.sleep(30)
-            self.today_is_holiday = not self.today_is_holiday
+            if self.check_holidays():
+                self.today_is_holiday = True
+            else:
+                self.today_is_holiday = False
 
 
 class MyVkBotLongPoll(VkBotLongPoll):
