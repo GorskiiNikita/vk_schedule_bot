@@ -84,17 +84,17 @@ def main():
 
                 elif event.obj.text.lower().strip() == 'какие сегодня пары?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=what_is_today(group['group'], now),
+                                     message=what_is_today(group['group'], now, mongo_client),
                                      random_id=get_random_id())
 
                 elif event.obj.text.lower().strip() == 'какие завтра пары?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=what_is_tomorrow(group['group'], now),
+                                     message=what_is_tomorrow(group['group'], now, mongo_client),
                                      random_id=get_random_id())
 
                 elif event.obj.text.lower().strip() == 'когда на учёбу?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=when_to_study(group['group'], now),
+                                     message=when_to_study(group['group'], now, mongo_client),
                                      random_id=get_random_id())
 
                 else:
