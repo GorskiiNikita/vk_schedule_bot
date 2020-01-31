@@ -1,10 +1,8 @@
-import threading
 import time
 
 import vk_api
-import datetime
 from pymongo import MongoClient
-from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
+from vk_api.bot_longpoll import VkBotEventType
 from vk_api.utils import get_random_id
 
 from commands_bot import where_is, what_is_today, what_is_tomorrow, when_to_study
