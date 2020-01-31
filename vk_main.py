@@ -27,6 +27,7 @@ class Holidays:
         self.db = self.client.botdb
 
         self.holiday_dates = self.get_holiday_dates()
+        self.response_text = ''
 
     def get_holiday_dates(self):
         cur = self.db.holidays.find()
@@ -39,6 +40,7 @@ class Holidays:
         now = datetime.datetime.now() + datetime.timedelta(hours=3)
         for holiday in self.holiday_dates:
             if datetime.datetime.strptime(holiday['start_holidays'], '%d-%m-%Y') < now < datetime.datetime.strptime(holiday['end_holidays'], '%d-%m-%Y'):
+                self.response_text = holiday['text']
                 return True
         return False
 
