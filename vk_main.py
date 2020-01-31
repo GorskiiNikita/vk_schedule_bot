@@ -1,3 +1,4 @@
+import datetime
 import time
 
 import vk_api
@@ -7,8 +8,7 @@ from vk_api.utils import get_random_id
 
 from commands_bot import where_is, what_is_today, what_is_tomorrow, when_to_study
 from db_client import ClientMongoDb
-from settings import *
-from storage import *
+from settings import VK_TOKEN, VK_GROUP_ID
 from utils import add_keyboard
 from vk_long_poll import MyVkBotLongPoll
 

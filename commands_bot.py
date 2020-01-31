@@ -1,4 +1,6 @@
-from storage import *
+import datetime
+
+from storage import DAYS, TIME_LESSONS
 
 
 def where_is(group, date, mongo_client):
