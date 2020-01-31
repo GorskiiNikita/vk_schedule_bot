@@ -1,16 +1,14 @@
-import threading
+import datetime
 import time
 
 import vk_api
-import datetime
 from pymongo import MongoClient
-from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
+from vk_api.bot_longpoll import VkBotEventType
 from vk_api.utils import get_random_id
 
 from commands_bot import where_is, what_is_today, what_is_tomorrow, when_to_study
 from db_client import ClientMongoDb
-from settings import *
-from storage import *
+from settings import VK_TOKEN, VK_GROUP_ID
 from utils import add_keyboard
 from vk_long_poll import MyVkBotLongPoll
 
@@ -86,17 +84,17 @@ def main():
 
                 elif event.obj.text.lower().strip() == 'какие сегодня пары?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=what_is_today(group['group'], now),
+                                     message=what_is_today(group['group'], now, mongo_client),
                                      random_id=get_random_id())
 
                 elif event.obj.text.lower().strip() == 'какие завтра пары?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=what_is_tomorrow(group['group'], now),
+                                     message=what_is_tomorrow(group['group'], now, mongo_client),
                                      random_id=get_random_id())
 
                 elif event.obj.text.lower().strip() == 'когда на учёбу?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=when_to_study(group['group'], now),
+                                     message=when_to_study(group['group'], now, mongo_client),
                                      random_id=get_random_id())
 
                 else:

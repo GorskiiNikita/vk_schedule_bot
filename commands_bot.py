@@ -1,4 +1,6 @@
-from storage import *
+import datetime
+
+from storage import DAYS, TIME_LESSONS
 
 
 def where_is(group, date, mongo_client):
@@ -47,26 +49,26 @@ def what_is_today(group, date, mongo_client):
     return 'Сегодня выходной'
 
 
-def what_is_tomorrow(group, date):
+def what_is_tomorrow(group, date, mongo_client):
     date += datetime.timedelta(days=1)
-    resp = what_is_today(group, date)
+    resp = what_is_today(group, date, mongo_client)
     if resp == 'Сегодня выходной':
         resp = 'Завтра выходной'
     return resp
 
 
-def when_to_study(group, date):
-    resp = where_is(group, date)
+def when_to_study(group, date, mongo_client):
+    resp = where_is(group, date, mongo_client)
     if resp == 'Пары сегодня уже закончились' or resp == 'Сегодня выходной':
         date += datetime.timedelta(days=1)
-        resp = what_is_today(group, date)
+        resp = what_is_today(group, date, mongo_client)
         while resp == 'Сегодня выходной':
             date += datetime.timedelta(days=1)
-            resp = what_is_today(group, date)
+            resp = what_is_today(group, date,mongo_client)
         day = date.isoweekday()
         date = date.strftime('%d.%m.%Y')
         resp = f'На учёбу {date}, {DAYS[day-1]} \n\n Расписание в этот день:\n' + resp
         return resp
     else:
-        return f'На учёбу {date.strftime("%d.%m.%Y")}, Сегодня \n {what_is_today(group, date)}'
+        return f'На учёбу {date.strftime("%d.%m.%Y")}, Сегодня \n {what_is_today(group, date, mongo_client)}'
 

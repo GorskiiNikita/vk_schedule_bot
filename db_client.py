@@ -1,5 +1,6 @@
 from pymongo import MongoClient
-from storage import *
+
+from storage import DAYS_OF_WEEK
 
 
 class ClientMongoDb:
