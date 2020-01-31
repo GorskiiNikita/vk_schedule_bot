@@ -1,3 +1,6 @@
+import threading
+import time
+
 import vk_api
 import datetime
 from pymongo import MongoClient
@@ -15,6 +18,30 @@ TIME_LESSONS = {'first': datetime.time(9, 0, 0),
                 'fifth': datetime.time(16, 45, 0)}
 
 TOKEN = 'cbb736a0eaa5cbb7c5a8feec57b57479ef7b518cdee16c9bab004299f0c83cd44f830247c4063dc637f11'
+
+
+class Holidays:
+    def __init__(self):
+        self.today_is_holiday = False
+        self.client = MongoClient()
+        self.db = self.client.botdb
+
+        self.holiday_dates = self.get_holiday_dates()
+
+    def get_holiday_dates(self):
+        cur = self.db.holidays.find()
+        hols = []
+        for i in cur:
+            hols.append(i)
+        return hols
+
+    def check_day(self):
+        pass
+
+    def start_loop(self):
+        while True:
+            time.sleep(30)
+            self.today_is_holiday = not self.today_is_holiday
 
 
 class MyVkBotLongPoll(VkBotLongPoll):
@@ -150,6 +177,7 @@ def when_to_study(group, date):
 
 
 def main():
+    global holidays
     vk_session = vk_api.VkApi(token=TOKEN)
 
     client = MongoClient()
@@ -162,6 +190,8 @@ def main():
     LIST_OF_GROUPS = [group['_id'] for group in db.groups.find()]
 
     for event in longpoll.listen():
+
+        print(holidays.today_is_holiday)
 
         if event.type == VkBotEventType.MESSAGE_NEW:
             now = datetime.datetime.now() + datetime.timedelta(hours=3)
@@ -214,4 +244,9 @@ def main():
 
 
 if __name__ == '__main__':
+    holidays = Holidays()
+    my_thread = threading.Thread(target=holidays.start_loop)
+    my_thread.daemon = True
+    my_thread.start()
+
     main()
