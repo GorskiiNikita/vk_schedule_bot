@@ -52,7 +52,7 @@ def main():
     mongo_client = ClientMongoDb()
     vk_session = vk_api.VkApi(token=VK_TOKEN)
 
-    longpoll = MyVkBotLongPoll(vk_session, '187821773')
+    longpoll = MyVkBotLongPoll(vk_session, VK_GROUP_ID)
 
     vk = vk_session.get_api()
 
