@@ -1,15 +1,9 @@
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
 
-def add_keyboard():
+def create_custom_keyboard(buttons):
     keyboard = VkKeyboard()
-    keyboard.add_button('Где пара?', color=VkKeyboardColor.PRIMARY)
-    keyboard.add_line()
-    keyboard.add_button('Какие сегодня пары?', color=VkKeyboardColor.PRIMARY)
-    keyboard.add_line()
-    keyboard.add_button('Какие завтра пары?', color=VkKeyboardColor.PRIMARY)
-    keyboard.add_line()
-    keyboard.add_button('Когда на учёбу?', color=VkKeyboardColor.PRIMARY)
+    for btn in buttons:
+        keyboard.add_button(btn, color=VkKeyboardColor.PRIMARY)
+        keyboard.add_line()
     return keyboard.get_keyboard()
-
-
