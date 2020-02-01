@@ -26,8 +26,8 @@ class ClientMongoDb:
                 schedule[lesson] = schedule[lesson][date.isocalendar()[1] % 2]
         return schedule
 
-    def start_func(self, user_id):
-        self.db.users.insert_one({'_id': user_id, 'group': None})
+    def init_user(self, user_id):
+        self.db.users.insert_one({'_id': user_id, 'group': None, 'action': 'wait'})
 
     def update_user_group(self, user_id, group):
         self.db.users.update_one({
@@ -37,6 +37,21 @@ class ClientMongoDb:
                 'group': group.lower()
             }
         }, upsert=False)
+
+    def change_action_user(self, user_id, action):
+        self.db.users.update_one({
+            '_id': user_id
+        }, {
+            '$set': {
+                'action': action
+            }
+        }, upsert=False)
+
+    def get_texts(self):
+        texts = {}
+        for text in self.db.texts.find():
+            texts[text['_id']] = text['text']
+        return texts
 
 
 
