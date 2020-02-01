@@ -95,7 +95,12 @@ def main():
                                                                   'Задать вопрос']),
                                  random_id=get_random_id())
             elif group['action'] == 'get':
-                if event.obj.text.lower().strip() == 'где пара?':
+                if group['group'] is None:
+                    vk.messages.send(user_id=event.obj.from_id,
+                                     message='Введите номер группы',
+                                     random_id=get_random_id())
+
+                elif event.obj.text.lower().strip() == 'где пара?':
                     vk.messages.send(user_id=event.obj.from_id,
                                      message=where_is(group['group'], now, mongo_client),
                                      random_id=get_random_id())
@@ -113,6 +118,16 @@ def main():
                 elif event.obj.text.lower().strip() == 'когда на учёбу?':
                     vk.messages.send(user_id=event.obj.from_id,
                                      message=when_to_study(group['group'], now, mongo_client),
+                                     random_id=get_random_id())
+
+                elif group['group'] in list_of_groups:
+                    mongo_client.update_user_group(event.obj.from_id, event.obj.text.lower().strip())
+                    vk.messages.send(user_id=event.obj.from_id,
+                                     message='Номер группы принят',
+                                     random_id=get_random_id())
+                else:
+                    vk.messages.send(user_id=event.obj.from_id,
+                                     message='Бот вас не понял. Введите номер группы или команду',
                                      random_id=get_random_id())
 
 
