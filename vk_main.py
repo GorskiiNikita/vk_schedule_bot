@@ -66,6 +66,8 @@ def main():
             if event.obj.text.lower().strip() == 'начать' or group is None:
                 if group is None:
                     mongo_client.init_user(event.obj.from_id)
+                else:
+                    mongo_client.change_action_user(event.obj.from_id, 'wait')
                 vk.messages.send(user_id=event.obj.from_id,
                                  keyboard=create_custom_keyboard(['Узнать расписание',
                                                                   'Задать вопрос']),
@@ -80,12 +82,14 @@ def main():
                                                                   'Какие завтра пары?',
                                                                   'Когда на учёбу?',
                                                                   'На главную']),
+                                 message='Тут можно узнать расписание',
                                  random_id=get_random_id())
 
-            elif event.obj.text.lower().strip() == 'задать вопрос по заказу':
+            elif event.obj.text.lower().strip() == 'задать вопрос':
                 mongo_client.change_action_user(event.obj.from_id, 'wait')
                 vk.messages.send(user_id=event.obj.from_id,
                                  keyboard=create_custom_keyboard(['На главную']),
+                                 message='Тут можно задать вопрос по заказу',
                                  random_id=get_random_id())
 
             elif event.obj.text.lower().strip() == 'на главную':
@@ -93,12 +97,20 @@ def main():
                 vk.messages.send(user_id=event.obj.from_id,
                                  keyboard=create_custom_keyboard(['Узнать расписание',
                                                                   'Задать вопрос']),
+                                 message='Возвращаемся на главную',
                                  random_id=get_random_id())
             elif group['action'] == 'get':
-                if group['group'] is None:
+                if event.obj.text.lower().strip() in list_of_groups:
+                    mongo_client.update_user_group(event.obj.from_id, event.obj.text.lower().strip())
+                    vk.messages.send(user_id=event.obj.from_id,
+                                     message='Номер группы принят',
+                                     random_id=get_random_id())
+
+                elif group['group'] is None:
                     vk.messages.send(user_id=event.obj.from_id,
                                      message='Введите номер группы',
                                      random_id=get_random_id())
+                    continue
 
                 elif event.obj.text.lower().strip() == 'где пара?':
                     vk.messages.send(user_id=event.obj.from_id,
@@ -120,11 +132,6 @@ def main():
                                      message=when_to_study(group['group'], now, mongo_client),
                                      random_id=get_random_id())
 
-                elif group['group'] in list_of_groups:
-                    mongo_client.update_user_group(event.obj.from_id, event.obj.text.lower().strip())
-                    vk.messages.send(user_id=event.obj.from_id,
-                                     message='Номер группы принят',
-                                     random_id=get_random_id())
                 else:
                     vk.messages.send(user_id=event.obj.from_id,
                                      message='Бот вас не понял. Введите номер группы или команду',
