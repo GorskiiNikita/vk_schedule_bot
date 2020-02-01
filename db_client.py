@@ -47,8 +47,11 @@ class ClientMongoDb:
             }
         }, upsert=False)
 
-    def get_welcome_message(self):
-        return 'Hello'
+    def get_texts(self):
+        texts = {}
+        for text in self.db.texts.find():
+            texts[text['_id']] = text['text']
+        return texts
 
 
 
