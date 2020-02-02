@@ -65,6 +65,9 @@ def main():
             now = datetime.datetime.now() + datetime.timedelta(hours=3)
             group = mongo_client.get_group(event.obj.from_id)
 
+            if group['group'] not in groups.data:
+                group['group'] = None
+
             if event.obj.text.lower().strip() == 'начать' or group is None:
                 if group is None:
                     mongo_client.init_user(event.obj.from_id)
