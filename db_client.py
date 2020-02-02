@@ -53,5 +53,11 @@ class ClientMongoDb:
             texts[text['_id']] = text['text']
         return texts
 
+    def get_last_update_texts(self):
+        return self.db.times.find_one({'_id': 'last_update_texts'})['timestamp']
+
+    def get_last_update_groups(self):
+        return self.db.times.find_one({'_id': 'last_update_groups'})['timestamp']
+
 
 
