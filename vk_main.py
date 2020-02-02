@@ -1,10 +1,10 @@
 import datetime
+import threading
 import time
 import os
 import sys
 
 import vk_api
-from pymongo import MongoClient
 from vk_api.bot_longpoll import VkBotEventType
 from vk_api.utils import get_random_id
 
@@ -15,49 +15,49 @@ from utils import create_custom_keyboard
 from vk_long_poll import MyVkBotLongPoll
 
 
-class Holidays:
-    def __init__(self):
-        self.today_is_holiday = False
-        self.client = MongoClient()
-        self.db = self.client.botdb
+class Texts:
+    def __init__(self, mongo_client):
+        self.data = mongo_client.get_texts()
+        self.last_update_time = mongo_client.get_last_update_texts()
 
-        self.holiday_dates = self.get_holiday_dates()
-        self.response_text = ''
-
-    def get_holiday_dates(self):
-        cur = self.db.holidays.find()
-        hols = []
-        for i in cur:
-            hols.append(i)
-        return hols
-
-    def check_holidays(self):
-        now = datetime.datetime.now() + datetime.timedelta(hours=3)
-        for holiday in self.holiday_dates:
-            if datetime.datetime.strptime(holiday['start_holidays'], '%d-%m-%Y') < now < datetime.datetime.strptime(holiday['end_holidays'], '%d-%m-%Y'):
-                self.response_text = holiday['text']
-                return True
-        return False
-
-    def start_loop(self):
+    def start_check_loop(self, mongo_client):
         while True:
-            time.sleep(30)
-            if self.check_holidays():
-                self.today_is_holiday = True
-            else:
-                self.today_is_holiday = False
+            if self.last_update_time != mongo_client.get_last_update_texts():
+                self.last_update_time = mongo_client.get_last_update_texts()
+                self.data = mongo_client.get_texts()
+            time.sleep(5)
+
+
+class Groups:
+    def __init__(self, mongo_client):
+        self.data = mongo_client.get_list_of_groups()
+        self.last_update_time = mongo_client.get_last_update_groups()
+
+    def start_check_loop(self, mongo_client):
+        while True:
+            if self.last_update_time != mongo_client.get_last_update_groups():
+                self.last_update_time = mongo_client.get_last_update_groups()
+                self.data = mongo_client.get_list_of_groups()
+            time.sleep(5)
 
 
 def main():
     mongo_client = ClientMongoDb()
-    texts = mongo_client.get_texts()
+
+    texts = Texts(mongo_client)
+    thread_check_texts = threading.Thread(target=texts.start_check_loop, args=(mongo_client, ))
+    thread_check_texts.daemon = True
+    thread_check_texts.start()
+
+    groups = Groups(mongo_client)
+    thread_check_groups = threading.Thread(target=groups.start_check_loop, args=(mongo_client,))
+    thread_check_groups.daemon = True
+    thread_check_groups.start()
 
     vk_session = vk_api.VkApi(token=VK_TOKEN)
     longpoll = MyVkBotLongPoll(vk_session, VK_GROUP_ID)
 
     vk = vk_session.get_api()
-
-    list_of_groups = mongo_client.get_list_of_groups()
 
     for event in longpoll.listen():
 
@@ -73,7 +73,7 @@ def main():
                 vk.messages.send(user_id=event.obj.from_id,
                                  keyboard=create_custom_keyboard(['Узнать расписание',
                                                                   'Задать вопрос']),
-                                 message=texts['welcome_message'],
+                                 message=texts.data['welcome_message'],
                                  random_id=get_random_id())
 
             elif event.obj.text.lower().strip() == 'узнать расписание':
@@ -84,14 +84,14 @@ def main():
                                                                   'Какие завтра пары?',
                                                                   'Когда на учёбу?',
                                                                   'На главную']),
-                                 message=texts['query_schedule'],
+                                 message=texts.data['query_schedule'],
                                  random_id=get_random_id())
 
             elif event.obj.text.lower().strip() == 'задать вопрос':
                 mongo_client.change_action_user(event.obj.from_id, 'wait')
                 vk.messages.send(user_id=event.obj.from_id,
                                  keyboard=create_custom_keyboard(['На главную']),
-                                 message=texts['question'],
+                                 message=texts.data['question'],
                                  random_id=get_random_id())
 
             elif event.obj.text.lower().strip() == 'на главную':
@@ -99,18 +99,18 @@ def main():
                 vk.messages.send(user_id=event.obj.from_id,
                                  keyboard=create_custom_keyboard(['Узнать расписание',
                                                                   'Задать вопрос']),
-                                 message=texts['to_main'],
+                                 message=texts.data['to_main'],
                                  random_id=get_random_id())
             elif group['action'] == 'get':
-                if event.obj.text.lower().strip() in list_of_groups:
+                if event.obj.text.lower().strip() in groups.data:
                     mongo_client.update_user_group(event.obj.from_id, event.obj.text.lower().strip())
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=texts['valid_group'],
+                                     message=texts.data['valid_group'],
                                      random_id=get_random_id())
 
                 elif group['group'] is None:
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=texts['input_group'],
+                                     message=texts.data['input_group'],
                                      random_id=get_random_id())
                     continue
 
@@ -136,7 +136,7 @@ def main():
 
                 else:
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=texts['schedule_error'],
+                                     message=texts.data['schedule_error'],
                                      random_id=get_random_id())
 
 
