@@ -148,4 +148,5 @@ if __name__ == '__main__':
     here = os.path.dirname(os.path.abspath(__file__))
     err = open('err.log', 'a+')
     sys.stderr = err
+    sys.stdout = err
     main()
