@@ -7,18 +7,31 @@ def where_is(group, date, mongo_client):
     now = date
     next_lesson_time = None
     next_lesson_key = None
+    current_lesson_time = None
+    current_lesson_key = None
     day = now.isoweekday()
     time = now.time()
     if day in range(1, 7):
         schedule = mongo_client.get_schedule(group, now)
         for key in TIME_LESSONS.keys():
-            if schedule[key] is not None and TIME_LESSONS[key] > time:
+            lesson_date = datetime.datetime(year=2000, month=1, day=1,
+                                            hour=TIME_LESSONS[key].hour, minute=TIME_LESSONS[key].minute)
+            lesson_date += datetime.timedelta(hours=1, minutes=45)
+            if schedule[key] is not None and TIME_LESSONS[key] < time < lesson_date.time():
+                current_lesson_time = TIME_LESSONS[key]
+                current_lesson_key = key
+                break
+            elif schedule[key] is not None and TIME_LESSONS[key] > time:
                 next_lesson_time = TIME_LESSONS[key]
                 next_lesson_key = key
                 break
 
-        if next_lesson_time is None:
+        if next_lesson_time is None and current_lesson_time is None:
             return 'Пары сегодня уже закончились'
+        elif current_lesson_time is not None:
+            return f'Текущая пара: {schedule[current_lesson_key]["name"]} \n' \
+                   f'{schedule[current_lesson_key]["where"]}' \
+                   f'Поторопись!'
         else:
             minutes = next_lesson_time.hour * 60 + next_lesson_time.minute - time.minute - time.hour * 60
             minutes_left = minutes % 60
