@@ -29,9 +29,9 @@ def where_is(group, date, mongo_client):
         if next_lesson_time is None and current_lesson_time is None:
             return 'Пары сегодня уже закончились'
         elif current_lesson_time is not None:
-            return f'Текущая пара: {schedule[current_lesson_key]["name"]} \n' \
-                   f'{schedule[current_lesson_key]["where"]}' \
-                   f'Поторопись!'
+            return f'Текущая пара: {schedule[current_lesson_key]["name"]}' \
+                   f'\nАудитория: {schedule[current_lesson_key]["where"]}' \
+                   f'\nПоторопись!'
         else:
             minutes = next_lesson_time.hour * 60 + next_lesson_time.minute - time.minute - time.hour * 60
             minutes_left = minutes % 60
