@@ -16,7 +16,7 @@ def where_is(group, date, mongo_client):
         for key in TIME_LESSONS.keys():
             lesson_date = datetime.datetime(year=2000, month=1, day=1,
                                             hour=TIME_LESSONS[key].hour, minute=TIME_LESSONS[key].minute)
-            lesson_date += datetime.timedelta(hours=1, minutes=45)
+            lesson_date += datetime.timedelta(hours=1, minutes=30)
             if schedule[key] is not None and TIME_LESSONS[key] < time < lesson_date.time():
                 current_lesson_time = TIME_LESSONS[key]
                 current_lesson_key = key
