@@ -10,6 +10,7 @@ from vk_api.utils import get_random_id
 
 from commands_bot import where_is, what_is_today, what_is_tomorrow, when_to_study
 from db_client import ClientMongoDb
+from logging import TelegramLogger
 from settings import VK_TOKEN, VK_GROUP_ID, PATH_TO_LOG_FILE
 from utils import create_custom_keyboard
 from vk_long_poll import MyVkBotLongPoll
@@ -146,7 +147,8 @@ def main():
 
 if __name__ == '__main__':
     here = os.path.dirname(os.path.abspath(__file__))
-    err = open(PATH_TO_LOG_FILE, 'a+')
-    sys.stderr = err
-    sys.stdout = err
+    buffer = open(PATH_TO_LOG_FILE, 'ab')
+    logger = TelegramLogger(buffer)
+    sys.stderr = logger
+    sys.stdout = logger
     main()
