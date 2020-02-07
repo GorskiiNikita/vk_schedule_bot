@@ -143,7 +143,7 @@ def main():
                                      message=texts.data['schedule_error'],
                                      random_id=get_random_id())
             elif group['action'] == 'question':
-                vk.messages.send(user_id=VK_ADMIN_ID,
+                vk.messages.send(user_ids=','.join(VK_ADMIN_ID),
                                  message='тук-тук',
                                  forward_messages=event.obj.id,
                                  random_id=get_random_id())
