@@ -88,7 +88,7 @@ def main():
                                  random_id=get_random_id())
 
             elif event.obj.text.lower().strip() == 'задать вопрос':
-                mongo_client.change_action_user(event.obj.from_id, 'question')
+                mongo_client.change_action_user(event.obj.from_id, 'alert')
                 vk.messages.send(user_id=event.obj.from_id,
                                  keyboard=create_custom_keyboard(['На главную']),
                                  message=texts.data['question'],
@@ -142,15 +142,17 @@ def main():
                     vk.messages.send(user_id=event.obj.from_id,
                                      message=texts.data['schedule_error'],
                                      random_id=get_random_id())
-            elif group['action'] == 'question':
+            elif group['action'] == 'question' or group['action'] == 'alert':
                 vk.messages.send(user_ids=','.join(VK_ADMIN_ID),
                                  message='тук-тук',
                                  forward_messages=event.obj.id,
                                  random_id=get_random_id())
 
-                vk.messages.send(user_id=event.obj.from_id,
-                                 message=texts.data['receive_to_admin'],
-                                 random_id=get_random_id())
+                if group['action'] == 'alert':
+                    mongo_client.change_action_user(event.obj.from_id, 'question')
+                    vk.messages.send(user_id=event.obj.from_id,
+                                     message=texts.data['receive_to_admin'],
+                                     random_id=get_random_id())
 
 
 if __name__ == '__main__':
