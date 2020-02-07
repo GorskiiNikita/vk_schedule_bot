@@ -10,7 +10,7 @@ from vk_api.utils import get_random_id
 
 from commands_bot import where_is, what_is_today, what_is_tomorrow, when_to_study
 from db_client import ClientMongoDb
-from settings import VK_TOKEN, VK_GROUP_ID, PATH_TO_LOG_FILE
+from settings import VK_TOKEN, VK_GROUP_ID, PATH_TO_LOG_FILE, VK_ADMIN_ID
 from utils import create_custom_keyboard
 from vk_long_poll import MyVkBotLongPoll
 
@@ -88,7 +88,7 @@ def main():
                                  random_id=get_random_id())
 
             elif event.obj.text.lower().strip() == 'задать вопрос':
-                mongo_client.change_action_user(event.obj.from_id, 'wait')
+                mongo_client.change_action_user(event.obj.from_id, 'question')
                 vk.messages.send(user_id=event.obj.from_id,
                                  keyboard=create_custom_keyboard(['На главную']),
                                  message=texts.data['question'],
@@ -142,6 +142,15 @@ def main():
                     vk.messages.send(user_id=event.obj.from_id,
                                      message=texts.data['schedule_error'],
                                      random_id=get_random_id())
+            elif group['action'] == 'question':
+                vk.messages.send(user_id=VK_ADMIN_ID,
+                                 message='тук-тук',
+                                 forward_messages=event.obj.id,
+                                 random_id=get_random_id())
+
+                vk.messages.send(user_id=event.obj.from_id,
+                                 message=texts.data['receive_to_admin'],
+                                 random_id=get_random_id())
 
 
 if __name__ == '__main__':
