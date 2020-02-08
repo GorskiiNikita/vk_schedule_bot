@@ -27,6 +27,9 @@ def where_is(group, date, mongo_client):
                 break
 
         if next_lesson_time is None and current_lesson_time is None:
+            today = what_is_today(group, date, mongo_client)
+            if today == 'Сегодня выходной':
+                return today
             return 'Пары сегодня уже закончились'
         elif current_lesson_time is not None:
             return f'Текущая пара: {schedule[current_lesson_key]["name"]}' \
