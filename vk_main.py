@@ -83,11 +83,12 @@ def main():
                                                                   'Какие сегодня пары?',
                                                                   'Какие завтра пары?',
                                                                   'Когда на учёбу?',
+                                                                  'Заказать работу',
                                                                   'На главную']),
                                  message=texts.data['query_schedule'],
                                  random_id=get_random_id())
 
-            elif event.obj.text.lower().strip() == 'задать вопрос':
+            elif event.obj.text.lower().strip() == 'задать вопрос' or event.obj.text.lower().strip() == 'заказать работу':
                 mongo_client.change_action_user(event.obj.from_id, 'alert')
                 vk.messages.send(user_id=event.obj.from_id,
                                  keyboard=create_custom_keyboard(['На главную']),
