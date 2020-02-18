@@ -8,5 +8,14 @@ def create_custom_keyboard(buttons):
             keyboard.add_button(buttons[i], color=VkKeyboardColor.PRIMARY)
             continue
         keyboard.add_line()
+
+        # костыль
+        if buttons[i] == 'Заказать работу':
+            keyboard.add_button(buttons[i], color=VkKeyboardColor.POSITIVE)
+            continue
+        elif buttons[i] == 'На главную':
+            keyboard.add_button(buttons[i], color=VkKeyboardColor.NEGATIVE)
+            continue
+
         keyboard.add_button(buttons[i], color=VkKeyboardColor.PRIMARY)
     return keyboard.get_keyboard()
