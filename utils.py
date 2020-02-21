@@ -19,3 +19,14 @@ def create_custom_keyboard(buttons):
 
         keyboard.add_button(buttons[i], color=VkKeyboardColor.PRIMARY)
     return keyboard.get_keyboard()
+
+
+def today_is_holiday(date, holidays):
+    if date.strftime('%d.%m.%Y') in holidays.data:
+        return True
+    return False
+
+
+
+
+

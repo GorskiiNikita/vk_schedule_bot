@@ -41,6 +41,19 @@ class Groups:
             time.sleep(5)
 
 
+class Holidays:
+    def __init__(self, mongo_client):
+        self.data = mongo_client.get_holidays()
+        self.last_update_time = mongo_client.get_last_update_holidays()
+
+    def start_check_loop(self, mongo_client):
+        while True:
+            if self.last_update_time != mongo_client.get_last_update_holidays():
+                self.last_update_time = mongo_client.get_last_update_groups()
+                self.data = mongo_client.get_holidays()
+            time.sleep(5)
+
+
 def main():
     mongo_client = ClientMongoDb()
 
@@ -53,6 +66,11 @@ def main():
     thread_check_groups = threading.Thread(target=groups.start_check_loop, args=(mongo_client,))
     thread_check_groups.daemon = True
     thread_check_groups.start()
+
+    holidays = Holidays(mongo_client)
+    thread_check_holidays = threading.Thread(target=holidays.start_check_loop, args=(mongo_client,))
+    thread_check_holidays.daemon = True
+    thread_check_holidays.start()
 
     vk_session = vk_api.VkApi(token=VK_TOKEN)
     longpoll = MyVkBotLongPoll(vk_session, VK_GROUP_ID)
@@ -121,22 +139,22 @@ def main():
 
                 elif event.obj.text.lower().strip() == 'где пара?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=where_is(group['group'], now, mongo_client),
+                                     message=where_is(group['group'], now, mongo_client, holidays),
                                      random_id=get_random_id())
 
                 elif event.obj.text.lower().strip() == 'какие сегодня пары?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=what_is_today(group['group'], now, mongo_client),
+                                     message=what_is_today(group['group'], now, mongo_client, holidays),
                                      random_id=get_random_id())
 
                 elif event.obj.text.lower().strip() == 'какие завтра пары?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=what_is_tomorrow(group['group'], now, mongo_client),
+                                     message=what_is_tomorrow(group['group'], now, mongo_client, holidays),
                                      random_id=get_random_id())
 
                 elif event.obj.text.lower().strip() == 'когда на учёбу?':
                     vk.messages.send(user_id=event.obj.from_id,
-                                     message=when_to_study(group['group'], now, mongo_client),
+                                     message=when_to_study(group['group'], now, mongo_client, holidays),
                                      random_id=get_random_id())
 
                 else:

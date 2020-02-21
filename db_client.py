@@ -59,5 +59,14 @@ class ClientMongoDb:
     def get_last_update_groups(self):
         return self.db.times.find_one({'_id': 'last_update_groups'})['timestamp']
 
+    def get_last_update_holidays(self):
+        return self.db.times.find_one({'_id': 'last_update_holidays'})['timestamp']
+
+    def get_holidays(self):
+        holidays = []
+        for holiday in self.db.holidays.find():
+            holidays.append(holiday['date'])
+        return holidays
+
 
 
