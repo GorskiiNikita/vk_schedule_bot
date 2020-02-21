@@ -22,6 +22,7 @@ def create_custom_keyboard(buttons):
 
 
 def today_is_holiday(date, holidays):
+    print(holidays.data, date.strftime('%d.%m.%Y'))
     if date.strftime('%d.%m.%Y') in holidays.data:
         return True
     return False
