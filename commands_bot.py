@@ -1,9 +1,10 @@
 import datetime
 
 from storage import DAYS, TIME_LESSONS
+from utils import today_is_holiday
 
 
-def where_is(group, date, mongo_client):
+def where_is(group, date, mongo_client, holidays):
     now = date
     next_lesson_time = None
     next_lesson_key = None
@@ -11,7 +12,7 @@ def where_is(group, date, mongo_client):
     current_lesson_key = None
     day = now.isoweekday()
     time = now.time()
-    if day in range(1, 7):
+    if day in range(1, 7) and not today_is_holiday(now, holidays):
         schedule = mongo_client.get_schedule(group, now)
         for key in TIME_LESSONS.keys():
             lesson_date = datetime.datetime(year=2000, month=1, day=1,
@@ -27,7 +28,7 @@ def where_is(group, date, mongo_client):
                 break
 
         if next_lesson_time is None and current_lesson_time is None:
-            today = what_is_today(group, date, mongo_client)
+            today = what_is_today(group, date, mongo_client, holidays)
             if today == 'Сегодня выходной':
                 return today
             return 'Пары сегодня уже закончились'
@@ -46,7 +47,7 @@ def where_is(group, date, mongo_client):
         return 'Сегодня выходной'
 
 
-def what_is_today(group, date, mongo_client):
+def what_is_today(group, date, mongo_client, holidays):
     resp = []
     lessons_time = {'first': '9:00 - 10:30',
                     'second': '10:45 - 12:15',
@@ -54,7 +55,7 @@ def what_is_today(group, date, mongo_client):
                     'fourth': '15:00 - 16:30',
                     'fifth': '16:45 - 18:15'}
     now = date
-    if now.isoweekday() in range(1, 7):
+    if now.isoweekday() in range(1, 7) and not today_is_holiday(now, holidays):
         schedule = mongo_client.get_schedule(group, now)
         for lesson in schedule.keys():
             if schedule[lesson] is not None:
@@ -65,26 +66,26 @@ def what_is_today(group, date, mongo_client):
     return 'Сегодня выходной'
 
 
-def what_is_tomorrow(group, date, mongo_client):
+def what_is_tomorrow(group, date, mongo_client, holidays):
     date += datetime.timedelta(days=1)
-    resp = what_is_today(group, date, mongo_client)
+    resp = what_is_today(group, date, mongo_client, holidays)
     if resp == 'Сегодня выходной':
         resp = 'Завтра выходной'
     return resp
 
 
-def when_to_study(group, date, mongo_client):
-    resp = where_is(group, date, mongo_client)
+def when_to_study(group, date, mongo_client, holidays):
+    resp = where_is(group, date, mongo_client, holidays)
     if resp == 'Пары сегодня уже закончились' or resp == 'Сегодня выходной':
         date += datetime.timedelta(days=1)
-        resp = what_is_today(group, date, mongo_client)
+        resp = what_is_today(group, date, mongo_client, holidays)
         while resp == 'Сегодня выходной':
             date += datetime.timedelta(days=1)
-            resp = what_is_today(group, date,mongo_client)
+            resp = what_is_today(group, date,mongo_client, holidays)
         day = date.isoweekday()
         date = date.strftime('%d.%m.%Y')
         resp = f'На учёбу {date}, {DAYS[day-1]} \n\n Расписание в этот день:\n' + resp
         return resp
     else:
-        return f'На учёбу {date.strftime("%d.%m.%Y")}, Сегодня \n {what_is_today(group, date, mongo_client)}'
+        return f'На учёбу {date.strftime("%d.%m.%Y")}, Сегодня \n {what_is_today(group, date, mongo_client, holidays)}'
 
