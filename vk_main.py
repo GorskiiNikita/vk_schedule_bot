@@ -94,6 +94,11 @@ def main():
                                  message=texts.data['welcome_message'],
                                  random_id=get_random_id())
 
+            elif not mongo_client.get_schedule_status() and event.obj.text.lower().strip() in ['где пара?', 'какие сегодня пары?', 'какие завтра пары?', 'когда на учёбу?', 'узнать расписание']:
+                vk.messages.send(user_id=event.obj.from_id,
+                                 message=texts.data['schedule_disable'],
+                                 random_id=get_random_id())
+
             elif event.obj.text.lower().strip() == 'узнать расписание':
                 mongo_client.change_action_user(event.obj.from_id, 'get')
                 vk.messages.send(user_id=event.obj.from_id,

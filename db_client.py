@@ -68,5 +68,8 @@ class ClientMongoDb:
             holidays.append(holiday['date'])
         return holidays
 
+    def get_schedule_status(self):
+        return self.db.settings.find_one({'_id': 'main'})['schedule_enabled']
+
 
 
