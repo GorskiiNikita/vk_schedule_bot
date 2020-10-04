@@ -38,7 +38,7 @@ class Groups:
             if self.last_update_time != mongo_client.get_last_update_groups():
                 self.last_update_time = mongo_client.get_last_update_groups()
                 self.data = mongo_client.get_list_of_groups()
-            time.sleep(5)
+            time.sleep(0.05)
 
 
 class Holidays:
